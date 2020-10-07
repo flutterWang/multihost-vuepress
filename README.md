@@ -1,2 +1,5 @@
-# multihost-vuepress
-多域名静态站点
+# Web Hook
+
+```json
+make go
+```
