@@ -10,6 +10,7 @@ func InitRouter() *gin.Engine {
 	r.GET("/", func(context *gin.Context) {
 		context.String(200, "%s", "webhook server")
 	})
+	r.GET("/init", InitVuepress)
 	r.NoRoute(Info)
 	return r
 }
