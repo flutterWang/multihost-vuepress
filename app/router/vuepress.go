@@ -3,16 +3,22 @@ package router
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
+// Config -
 type Config struct {
 	Readme         `json:"readme"`
 	VuepressConfig `json:"config"`
 }
 
+// Readme -
 type Readme struct {
 	Home       bool   `json:"home"`
 	HeroImage  string `json:"heroImage"`
@@ -27,6 +33,7 @@ type Readme struct {
 	Footer string `json:"footer"`
 }
 
+// VuepressConfig -
 type VuepressConfig struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
@@ -47,9 +54,18 @@ type VuepressConfig struct {
 			Text string `json:"text"`
 			Link string `json:"link"`
 		} `json:"nav"`
+		Sidebar []struct {
+			RouteName string `json:"routeName"`
+			Items     []struct {
+				Title       string   `json:"title"`
+				Collapsable bool     `json:"collapsable"`
+				Children    []string `json:"children"`
+			} `json:"items"`
+		} `json:"sidebar"`
 	} `json:"themeConfig"`
 }
 
+// InitVuepress -
 func InitVuepress(c *gin.Context) {
 	jsonFile, err := os.Open("config.json")
 	if err != nil {
@@ -66,8 +82,10 @@ func InitVuepress(c *gin.Context) {
 	CreateReadme(config.Readme)
 	CreateConfig(config.VuepressConfig)
 
+	runCommand(c, "./tool/test.sh")
 }
 
+// CreateReadme -
 func CreateReadme(config Readme) {
 	fileName := "README.md"
 	file, err := os.Create(fileName)
@@ -112,6 +130,7 @@ func CreateReadme(config Readme) {
 	file.WriteString("--- \n")
 }
 
+// CreateConfig -
 func CreateConfig(config VuepressConfig) {
 	fileName := "config.js"
 	file, err := os.Create(fileName)
@@ -166,7 +185,41 @@ func CreateConfig(config VuepressConfig) {
 
 		writeObjectAfter(file)
 	}
+
+	navMore := fmt.Sprintf("{text:'了解更多', items:[{text: 'GoCN', link: 'https://gocn.vip/'}]}")
+	file.WriteString(navMore)
 	writeArrAfter(file)
+
+	sideBar := fmt.Sprintf("sidebar:{")
+	file.WriteString(sideBar)
+	for _, route := range config.ThemeConfig.Sidebar {
+		routeName := fmt.Sprintf("'%s':", route.RouteName)
+		file.WriteString(routeName)
+		writeArrBefore(file)
+
+		for _, item := range route.Items {
+			writeObjectBefore(file)
+
+			title := fmt.Sprintf("title:'%s',", item.Title)
+			file.WriteString(title)
+
+			collapsable := fmt.Sprintf("collapsable:%v,", item.Collapsable)
+			file.WriteString(collapsable)
+
+			children := fmt.Sprintf("children:[")
+			file.WriteString(children)
+			for _, docs := range item.Children {
+				docsRoute := fmt.Sprintf("'%s',", docs)
+				file.WriteString(docsRoute)
+			}
+			writeArrAfter(file)
+
+			writeObjectAfter(file)
+		}
+		writeArrAfter(file)
+	}
+
+	writeObjectAfter(file)
 	writeObjectAfter(file)
 
 	file.WriteString("}")
@@ -190,4 +243,51 @@ func writeObjectBefore(file *os.File) {
 func writeObjectAfter(file *os.File) {
 	after := fmt.Sprintf("},")
 	file.WriteString(after)
+}
+
+func runCommand(c *gin.Context, execPath string) {
+	args := make([]string, 0)
+	args = append(args, "-c")
+	args = append(args, execPath)
+	//函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
+	cmd := exec.Command("/bin/bash", args...)
+
+	//显示运行的命令
+	c.String(200, "%s", cmd.Args)
+	//
+
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		c.String(200, "Error starting command: %s......", err.Error())
+		return
+	}
+
+	go asyncLog(c, stdout)
+	go asyncLog(c, stderr)
+
+	if err := cmd.Wait(); err != nil {
+		c.String(200, "Error waiting for command execution: %s......", err.Error())
+		return
+	}
+	return
+}
+
+func asyncLog(c *gin.Context, reader io.ReadCloser) error {
+	cache := "" //缓存不足一行的日志信息
+	buf := make([]byte, 1024)
+	for {
+		num, err := reader.Read(buf)
+		if err != nil && err != io.EOF {
+			return err
+		}
+		if num > 0 {
+			b := buf[:num]
+			s := strings.Split(string(b), "\n")
+			line := strings.Join(s[:len(s)-1], "\n") //取出整行的日志
+			c.String(200, "%s%s\n", cache, line)
+			cache = s[len(s)-1]
+		}
+	}
 }

@@ -1,0 +1,1 @@
+module.exports = { title: 'Jupiter', description: 'Framework', head: [[    'meta',{    name: 'keywords',    content: 'Go,golang,gRPC',},],], markdown:{lineNumbers: true,}, themeConfig:{nav:[{ text: '首页', link: '/',},{ text: '文档', link: '/docs/',},{text:'了解更多', items:[{text: 'GoCN', link: 'https://gocn.vip/'}]],},}

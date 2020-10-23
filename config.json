@@ -49,7 +49,21 @@
         },
         {
           "text": "文档",
-          "link": "/docs/"
+          "link": "/jupiter/"
+        }
+      ],
+      "sidebar": [
+        {
+          "routeName": "/jupiter/",
+          "items": [
+            {
+              "title": "第1章 Jupiter简介",
+              "collapsable": false,
+              "children": [
+                "/jupiter/1.1quickstart"
+              ]
+            }
+          ]
         }
       ]
     }
