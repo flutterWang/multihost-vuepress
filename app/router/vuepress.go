@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
+	"text/template"
 
 	"github.com/gin-gonic/gin"
 )
@@ -79,170 +81,31 @@ func InitVuepress(c *gin.Context) {
 	var config Config
 	json.Unmarshal(byteValue, &config)
 
-	CreateReadme(config.Readme)
-	CreateConfig(config.VuepressConfig)
+	CreateReadme(c, config.Readme)
 
 	runCommand(c, "./tool/test.sh")
 }
 
 // CreateReadme -
-func CreateReadme(config Readme) {
-	fileName := "README.md"
-	file, err := os.Create(fileName)
+func CreateReadme(c *gin.Context, config Readme) {
+	tmpl, err := template.ParseFiles("./README.tmpl")
 	if err != nil {
-		fmt.Println("文件打开失败", err)
-	}
-	//及时关闭file句柄
-	defer file.Close()
-
-	file.WriteString("--- \n")
-
-	home := fmt.Sprintf("home: %v \n", config.Home)
-	file.WriteString(home)
-
-	heroImage := fmt.Sprintf("heroImage: %s \n", config.HeroImage)
-	file.WriteString(heroImage)
-
-	actionText := fmt.Sprintf("actionText: %s \n", config.ActionText)
-	file.WriteString(actionText)
-
-	actionLink := fmt.Sprintf("actionLink: %s \n", config.ActionLink)
-	file.WriteString(actionLink)
-
-	heroText := fmt.Sprintf("heroText: %s \n", config.HeroText)
-	file.WriteString(heroText)
-
-	sidebar := fmt.Sprintf("sidebar: %s \n", config.Sidebar)
-	file.WriteString(sidebar)
-
-	features := fmt.Sprintf("features: \n")
-	file.WriteString(features)
-	for _, feature := range config.Features {
-		title := fmt.Sprintf("- title: %s \n", feature.Title)
-		file.WriteString(title)
-		details := fmt.Sprintf("  details: %s \n", feature.Details)
-		file.WriteString(details)
+		fmt.Println("create template failed, err:", err)
+		return
 	}
 
-	footer := fmt.Sprintf("footer: %s \n", config.Footer)
-	file.WriteString(footer)
-
-	file.WriteString("--- \n")
-}
-
-// CreateConfig -
-func CreateConfig(config VuepressConfig) {
-	fileName := "config.js"
-	file, err := os.Create(fileName)
+	f, err := os.Create("./README.md")
 	if err != nil {
-		fmt.Println("文件打开失败", err)
-	}
-	//及时关闭file句柄
-	defer file.Close()
-
-	file.WriteString("module.exports = {")
-
-	title := fmt.Sprintf(" title: '%s',", config.Title)
-	file.WriteString(title)
-
-	description := fmt.Sprintf(" description: '%s',", config.Description)
-	file.WriteString(description)
-
-	headBefore := fmt.Sprintf(" head: [")
-	file.WriteString(headBefore)
-	for _, head := range config.Head {
-		writeArrBefore(file)
-		tagName := fmt.Sprintf("    '%s',", head.TagName)
-		file.WriteString(tagName)
-
-		writeObjectBefore(file)
-
-		for _, attr := range head.Attrs {
-			attrName := fmt.Sprintf("    %s: '%v',", attr.AttrNameK, attr.AttrNameV)
-			file.WriteString(attrName)
-			attrValue := fmt.Sprintf("    %s: '%v',", attr.AttrValueK, attr.AttrValueV)
-			file.WriteString(attrValue)
-		}
-
-		writeObjectAfter(file)
-		writeArrAfter(file)
-	}
-	writeArrAfter(file)
-
-	markdown := fmt.Sprintf(" markdown:{lineNumbers: %v,},", config.Markdown.LineNumbers)
-	file.WriteString(markdown)
-
-	themeConfig := fmt.Sprintf(" themeConfig:{nav:")
-	file.WriteString(themeConfig)
-	writeArrBefore(file)
-	for _, nav := range config.ThemeConfig.Nav {
-		writeObjectBefore(file)
-
-		text := fmt.Sprintf(" text: '%s',", nav.Text)
-		file.WriteString(text)
-		link := fmt.Sprintf(" link: '%s',", nav.Link)
-		file.WriteString(link)
-
-		writeObjectAfter(file)
+		log.Println("create file: ", err)
+		return
 	}
 
-	navMore := fmt.Sprintf("{text:'了解更多', items:[{text: 'GoCN', link: 'https://gocn.vip/'}]}")
-	file.WriteString(navMore)
-	writeArrAfter(file)
-
-	sideBar := fmt.Sprintf("sidebar:{")
-	file.WriteString(sideBar)
-	for _, route := range config.ThemeConfig.Sidebar {
-		routeName := fmt.Sprintf("'%s':", route.RouteName)
-		file.WriteString(routeName)
-		writeArrBefore(file)
-
-		for _, item := range route.Items {
-			writeObjectBefore(file)
-
-			title := fmt.Sprintf("title:'%s',", item.Title)
-			file.WriteString(title)
-
-			collapsable := fmt.Sprintf("collapsable:%v,", item.Collapsable)
-			file.WriteString(collapsable)
-
-			children := fmt.Sprintf("children:[")
-			file.WriteString(children)
-			for _, docs := range item.Children {
-				docsRoute := fmt.Sprintf("'%s',", docs)
-				file.WriteString(docsRoute)
-			}
-			writeArrAfter(file)
-
-			writeObjectAfter(file)
-		}
-		writeArrAfter(file)
+	err = tmpl.Execute(f, config)
+	if err != nil {
+		log.Print("execute: ", err)
+		return
 	}
-
-	writeObjectAfter(file)
-	writeObjectAfter(file)
-
-	file.WriteString("}")
-}
-
-func writeArrBefore(file *os.File) {
-	before := fmt.Sprintf("[")
-	file.WriteString(before)
-}
-
-func writeArrAfter(file *os.File) {
-	after := fmt.Sprintf("],")
-	file.WriteString(after)
-}
-
-func writeObjectBefore(file *os.File) {
-	before := fmt.Sprintf("{")
-	file.WriteString(before)
-}
-
-func writeObjectAfter(file *os.File) {
-	after := fmt.Sprintf("},")
-	file.WriteString(after)
+	f.Close()
 }
 
 func runCommand(c *gin.Context, execPath string) {

@@ -1,0 +1,14 @@
+--- 
+home: {{.Home}} 
+heroImage: {{.HeroImage}}
+actionText: {{.ActionText}}
+actionLink: {{.ActionLink}}
+heroText: {{.HeroText}}
+sidebar: {{.Sidebar}}
+features: 
+{{range .Features}}
+  - title: {{.Title}}
+  - details: {{.Details}}
+{{end}}
+footer: {{.Footer}}
+---

@@ -1,1 +1,13 @@
-module.exports = { title: 'Jupiter', description: 'Framework', head: [[    'meta',{    name: 'keywords',    content: 'Go,golang,gRPC',},],], markdown:{lineNumbers: true,}, themeConfig:{nav:[{ text: '首页', link: '/',},{ text: '文档', link: '/jupiter/',},{text:'了解更多', items:[{text: 'GoCN', link: 'https://gocn.vip/'}]}],sidebar:{'/jupiter/':[{title:'第1章 Jupiter简介',collapsable:false,children:['/jupiter/1.1quickstart','/jupiter/1.2example','/jupiter/1.3feature','/jupiter/1.4contribute',],},],},},}
+let fs = require('fs')
+let file = "./docs/.vuepress/config.json"
+let config = JSON.parse(fs.readFileSync(file));
+
+let vuePressConfig = config.config
+
+module.exports = {
+  title: vuePressConfig.title,
+  description: vuePressConfig.description,
+  head: vuePressConfig.head,
+  markdown: vuePressConfig.markdown,
+  themeConfig: vuePressConfig.themeConfig
+}

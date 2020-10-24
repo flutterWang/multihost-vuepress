@@ -26,17 +26,13 @@
     "title": "Jupiter",
     "description": "Framework",
     "head": [
-      {
-        "tagName": "meta",
-        "attrs": [
-          {
-            "attrNameK": "name",
-            "attrNameV": "keywords",
-            "attrValueK": "content",
-            "attrValueV": "Go,golang,gRPC"
-          }
-        ]
-      }
+      [
+        "meta",
+        {
+          "name": "keywords",
+          "content": "Go,golang,jupiter,gRPC,micro service,govern,web-framework"
+        }
+      ]
     ],
     "markdown": {
       "lineNumbers": true
@@ -48,24 +44,21 @@
           "link": "/"
         },
         {
-          "text": "文档",
+          "text": "框架",
           "link": "/jupiter/"
         }
       ],
-      "sidebar": [
-        {
-          "routeName": "/jupiter/",
-          "items": [
-            {
-              "title": "第1章 Jupiter简介",
-              "collapsable": false,
-              "children": [
-                "/jupiter/1.1quickstart"
-              ]
-            }
-          ]
-        }
-      ]
+      "sidebar": {
+        "/jupiter/": [
+          {
+            "title": "第1章 Jupiter简介",
+            "collapsable": false,
+            "children": [
+              "/jupiter/1.1quickstart"
+            ]
+          }
+        ]
+      }
     }
   }
 }
