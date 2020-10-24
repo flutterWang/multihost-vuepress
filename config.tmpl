@@ -1,0 +1,53 @@
+module.exports = {
+  title: '{{.Title}}',
+  description: '{{.Description}}',
+  head:[
+  {{range .Head}}
+    [
+      '{{.TagName}}',
+      {{range .Attrs}}
+        {
+          {{.AttrNameK}}: '{{.AttrNameV}}',
+          {{.AttrValueK}}: '{{.AttrValueV}}'
+        },
+      {{end}}
+    ],
+  {{end}}
+  ],
+  markdown: {
+    vuePressConfig: {{.Markdown.LineNumbers}},
+  },
+  themeConfig: {
+    nav:[
+      {{range .ThemeConfig.Nav}}
+        {
+          text: '{{.Text}}',
+          link: '{{.Link}}',
+        },
+      {{end}}
+      {
+        text: "了解更多",
+        items: [
+          { text: "GOCN", link: "https://gocn.vip/" }
+        ],
+      }
+    ],
+    sidebar:{
+      {{range .ThemeConfig.Sidebar}}
+        '{{.RouteName}}':[
+          {{range .Items}}
+            {
+              title: '{{.Title}}',
+              collapsable: {{.Collapsable}},
+              children:[
+                {{range .Children}}
+                  '{{.}}',
+                {{end}}
+              ]
+            },
+          {{end}}
+        ],
+      {{end}}
+    }
+  }
+}

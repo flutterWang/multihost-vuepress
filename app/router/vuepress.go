@@ -81,8 +81,9 @@ func InitVuepress(c *gin.Context) {
 	var config Config
 	json.Unmarshal(byteValue, &config)
 
+	fmt.Println(config.VuepressConfig)
 	CreateReadme(c, config.Readme)
-
+	CreateConfigJS(c, config.VuepressConfig)
 	runCommand(c, "./tool/test.sh")
 }
 
@@ -95,6 +96,28 @@ func CreateReadme(c *gin.Context, config Readme) {
 	}
 
 	f, err := os.Create("./README.md")
+	if err != nil {
+		log.Println("create file: ", err)
+		return
+	}
+
+	err = tmpl.Execute(f, config)
+	if err != nil {
+		log.Print("execute: ", err)
+		return
+	}
+	f.Close()
+}
+
+// CreateConfigJS -
+func CreateConfigJS(c *gin.Context, config VuepressConfig) {
+	tmpl, err := template.ParseFiles("./config.tmpl")
+	if err != nil {
+		fmt.Println("create template failed, err:", err)
+		return
+	}
+
+	f, err := os.Create("./config.js")
 	if err != nil {
 		log.Println("create file: ", err)
 		return
