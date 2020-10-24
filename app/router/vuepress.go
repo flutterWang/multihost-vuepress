@@ -95,7 +95,7 @@ func CreateReadme(c *gin.Context, config Readme) {
 		return
 	}
 
-	f, err := os.Create("./README.md")
+	f, err := os.Create("./tool/README.md")
 	if err != nil {
 		log.Println("create file: ", err)
 		return
@@ -117,7 +117,7 @@ func CreateConfigJS(c *gin.Context, config VuepressConfig) {
 		return
 	}
 
-	f, err := os.Create("./config.js")
+	f, err := os.Create("./tool/config.js")
 	if err != nil {
 		log.Println("create file: ", err)
 		return

@@ -1,20 +1,9 @@
---- 
-home: true 
-heroImage: /logo.png
-actionText: 快速上手 ->
-actionLink: /docs/
-heroText: 罗马神话的众神之神
-sidebar: auto
-features: 
-
-  - title: 大道至简
-  - details: 简单配置快速构建项目
-
-  - title: 极致性能
-  - details: 全链路压测
-
-  - title: 全面治理
-  - details: Jupiter 配套组件
-
-footer: Apache Licensed | Copyright 2020-present Douyu
----
+## 执行
+1. make go
+2. 在生成 quick_vuepress 里执行 npm install -D vuepress
+3. 在生成项目的 package.json 中的 scripts 中加入 
+```
+ "docs:dev": "vuepress dev docs",
+  "docs:build": "vuepress build docs"
+```
+4. 执行 npm run docs:dev 启动程序
