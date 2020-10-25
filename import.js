@@ -10,10 +10,19 @@ for (let i = 0; i < config.themeConfig.nav.length; i++) {
 }
 
 if (isExistMoreNav) {
-  config.themeConfig.nav[moreNavIndex].items.push({
-    text: "GOCN",
-    link: "https://gocn.vip/"
-  })
+  let isExistGOCN = false
+  for (let i = 0; i < config.themeConfig.nav[moreNavIndex].items.length; i++) {
+    if (config.themeConfig.nav[moreNavIndex].items[i] != "GOCN") {
+      isExistGOCN = true
+    }
+  }
+
+  if (!isExistGOCN) {
+    config.themeConfig.nav[moreNavIndex].items.push({
+      text: "GOCN",
+      link: "https://gocn.vip/"
+    })
+  }
 } else {
   config.themeConfig.nav.push({
     text: "了解更多",
